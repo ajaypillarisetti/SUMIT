@@ -1,0 +1,8 @@
+.shiny-output-error{visibility: hidden;}
+#hiddenbutton{display: none;}
+#amb{margin-top:-10px;}
+a#downloadThresholdCSV{background-color: transparent; border:none; float:right;}
+a#downloadsdCSV{background-color: transparent; border:none; float:right;}
+a#downloadambCSV{background-color: transparent; border:none; float:right;}
+a#downloadMerged{background-color: transparent; border:none; float:right;}
+#filetable{width:90%; overflow-x:scroll;}
