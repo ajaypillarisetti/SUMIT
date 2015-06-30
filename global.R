@@ -13,7 +13,7 @@ library(dygraphs)
 ### Ajay Pillarisetti, University of California, Berkeley, 2015
 ### V1.0N
 
-#install missing packages.
+# install missing packages.
 # list.of.packages <- c("shiny","reshape2","plyr","lubridate","data.table","dygraphs","xts","devtools","shinydashboard","shinyBS","scales")
 # 	new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 # if(length(new.packages))(print(paste("The following packages are not installed: ", new.packages, sep="")))else(print("All packages installed"))
