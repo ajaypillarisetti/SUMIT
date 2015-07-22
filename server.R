@@ -282,8 +282,8 @@ shinyServer(function(input, output) {
 	})
 
 	output$useperdayTHRS <- renderValueBox({
-		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
-		totaluse <- data.threshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		days <- data_cleaned()[datetime>=from() & datetime<=to(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.threshold()[datetime>=from() & datetime<=to(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse/as.numeric(days),0),
 			subtitle = "Average Daily Use Minutes",
@@ -293,9 +293,9 @@ shinyServer(function(input, output) {
 	})
 
 	output$useperdayuseddaysTHRS <- renderValueBox({
-		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
-		totaluse <- data.threshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
-		num_nonuse_days <- data.threshold()[is.na(event),length(event),by=yday][V1==144, length(V1)]
+		days <- data_cleaned()[datetime>=from() & datetime<=to(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.threshold()[datetime>=from() & datetime<=to(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		num_nonuse_days <- data.threshold()[is.na(event) & datetime>=from() & datetime<=to(),length(event),by=yday][V1==144, length(V1)]
 		valueBox(
 			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
 			subtitle = "Avg Use on Use Days",
@@ -328,8 +328,8 @@ shinyServer(function(input, output) {
 	})
 
 	output$useperdaySD <- renderValueBox({
-		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
-		totaluse <- data.sdthreshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		days <- data_cleaned()[datetime>=fromSD() & datetime<=toSD(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse/as.numeric(days),0),
 			subtitle = "Average Daily Use Minutes",
@@ -339,9 +339,9 @@ shinyServer(function(input, output) {
 	})
 
 	output$useperdayuseddaysSD <- renderValueBox({
-		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
-		totaluse <- data.sdthreshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
-		num_nonuse_days <- data.sdthreshold()[is.na(event),length(event),by=yday][V1==144, length(V1)]
+		days <- data_cleaned()[datetime>=fromSD() & datetime<=toSD(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		num_nonuse_days <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD() & is.na(event),length(event),by=yday][V1==144, length(V1)]
 		valueBox(
 			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
 			subtitle = "Avg Use on Use Days",
@@ -373,8 +373,8 @@ shinyServer(function(input, output) {
 	})
 
 	output$useperdayAMB <- renderValueBox({
-		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
-		totaluse <- data.ambthreshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		days <- data_cleaned()[datetime>=fromAMB() & datetime<=toAMB(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse/as.numeric(days),0),
 			subtitle = "Average Daily Use Minutes",
@@ -384,9 +384,9 @@ shinyServer(function(input, output) {
 	})
 
 	output$useperdayuseddaysAMB <- renderValueBox({
-		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
-		totaluse <- data.ambthreshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
-		num_nonuse_days <- data.ambthreshold()[is.na(event),length(event),by=yday][V1==144, length(V1)]
+		days <- data_cleaned()[datetime>=fromAMB() & datetime<=toAMB(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		num_nonuse_days <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB() & is.na(event),length(event),by=yday][V1==144, length(V1)]
 		valueBox(
 			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
 			subtitle = "Avg Use on Use Days",
@@ -414,7 +414,7 @@ shinyServer(function(input, output) {
 
 	thresholdData <- reactive({
 		data.threshold()[,Date:=as.character(as.Date(datetime))]
-		summary <- data.threshold()[,list(
+		summary <- data.threshold()[datetime>=from() & datetime<=to(),list(
 			`Use (minutes)`=sum(event-(event - fileSamplingInterval()), na.rm=T),
 			`Sampling time (minutes)`=length(temp)*fileSamplingInterval(),
 			`Algorithm`=paste("Threshold: ",unique(threshold)," Deg C",sep="")
@@ -425,11 +425,12 @@ shinyServer(function(input, output) {
 		setcolorder(summary,c(1,2,3,5,4))
 	})
 
-	output$thresholdOutput <- renderDataTable(thresholdData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7,columnDefs = list(list(width = '100px', targets = c(0:4)))))
+	output$thresholdOutput <- renderDataTable(thresholdData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7))
+	# ,columnDefs = list(list(width = '100px', targets = c(0:4)))
 
 	sdData <- reactive({
 		data.sdthreshold()[,Date:=as.character(as.Date(datetime))]
-		summary <- data.sdthreshold()[,list(
+		summary <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(),list(
 			`Use (minutes)`=sum(event-(event - fileSamplingInterval()), na.rm=T),
 			`Sampling time (minutes)`=length(temp)*fileSamplingInterval(),
 			`Algorithm`="Deviation from Daily Mean"
@@ -440,11 +441,12 @@ shinyServer(function(input, output) {
 		setcolorder(summary,c(1,2,3,5,4))
 	})
 
-	output$sdOutput <- renderDataTable(sdData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7,columnDefs = list(list(width = '100px', targets = c(0:4)))))
+	output$sdOutput <- renderDataTable(sdData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7))
+# ,columnDefs = list(list(swidth = '100px', targets = c(0:4)))
 
 	ambData <- reactive({
 		data.ambthreshold()[,Date:=as.character(as.Date(datetime))]
-		summary <- data.ambthreshold()[,list(
+		summary <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(),list(
 			`Use (minutes)`=sum(event-(event - fileSamplingInterval()), na.rm=T),
 			`Sampling time (minutes)`=length(temp)*fileSamplingInterval(),
 			`Algorithm`="Ambient-corrected"
@@ -455,8 +457,8 @@ shinyServer(function(input, output) {
 		setcolorder(summary,c(1,2,3,5,4))		
 	})
 
-	output$ambOutput <- renderDataTable(ambData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7,columnDefs = list(list(width = '100px', targets = c(0:4)))))
-
+	output$ambOutput <- renderDataTable(ambData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7))
+	# ,columnDefs = list(list(width = '100px', targets = c(0:4)))
 
 	####################
 	####### PLOTS ###### 

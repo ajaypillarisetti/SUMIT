@@ -1,7 +1,7 @@
-// $(document).ready(function() {
-//   var ambLink = $('a[href="#shiny-tab-dailymeanamb"]')
-//   ambLink.click(function(){
-//     $("#hiddenbutton").click();
-//     return false;      
-//   });
-// });    
+$(document).ready(function() {
+	$("ul.treeview-menu li").click(function(){
+		$('table.table.table-striped.table-hover.dataTable.no-footer').delay(1000).attr('style', function(i, style)
+			{return style.replace(/width[^;]+;?/g, '');
+		});
+	});
+});    

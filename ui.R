@@ -17,7 +17,8 @@ dashboardPage(
 	dashboardBody(
         tags$head(
             tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
-            tags$script(type='text/javascript', src='dygraph-extra.js')
+            tags$script(type='text/javascript', src='dygraph-extra.js'),
+            tags$script(type='text/javascript', src='scripties.js')
             ),
 
     	tabItems(
