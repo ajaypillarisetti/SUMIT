@@ -475,6 +475,7 @@ shinyServer(function(input, output) {
 
 	thresholdData <- reactive({
 		data.threshold()[,Date:=as.character(as.Date(datetime))]
+		events <- data.threshold()[datetime>=from() & datetime<=to() & rnum.diff>1, list(Events=length(rnum.diff)), by='Date']
 		summary <- data.threshold()[datetime>=from() & datetime<=to(),list(
 			`Use (minutes)`=sum(event-(event - fileSamplingInterval()), na.rm=T),
 			`Sampling time (minutes)`=length(temp)*fileSamplingInterval(),
@@ -482,8 +483,9 @@ shinyServer(function(input, output) {
 			),
 			by='Date']
 		summary[`Use (minutes)`>0,`Any Use`:='Yes']	
-		summary[`Use (minutes)`<=0,`Any Use`:='No']	
-		setcolorder(summary,c(1,2,3,5,4))
+		summary[`Use (minutes)`<=0,`Any Use`:='No']
+		summary <- merge(summary, events, by='Date')	
+		setcolorder(summary,c(1,2,3,5,6,4))
 	})
 
 	output$thresholdOutput <- renderDataTable(thresholdData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7))
@@ -491,6 +493,7 @@ shinyServer(function(input, output) {
 
 	sdData <- reactive({
 		data.sdthreshold()[,Date:=as.character(as.Date(datetime))]
+		events <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD() & rnum.diff>1, list(Events=length(rnum.diff)), by='Date']		
 		summary <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(),list(
 			`Use (minutes)`=sum(event-(event - fileSamplingInterval()), na.rm=T),
 			`Sampling time (minutes)`=length(temp)*fileSamplingInterval(),
@@ -499,7 +502,8 @@ shinyServer(function(input, output) {
 			by='Date']
 		summary[`Use (minutes)`>0,`Any Use`:='Yes']	
 		summary[`Use (minutes)`<=0,`Any Use`:='No']	
-		setcolorder(summary,c(1,2,3,5,4))
+		summary <- merge(summary, events, by='Date')	
+		setcolorder(summary,c(1,2,3,5,6,4))
 	})
 
 	output$sdOutput <- renderDataTable(sdData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7))
@@ -507,6 +511,7 @@ shinyServer(function(input, output) {
 
 	ambData <- reactive({
 		data.ambthreshold()[,Date:=as.character(as.Date(datetime))]
+		events <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB() & rnum.diff>1, list(Events=length(rnum.diff)), by='Date']			
 		summary <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(),list(
 			`Use (minutes)`=sum(event-(event - fileSamplingInterval()), na.rm=T),
 			`Sampling time (minutes)`=length(temp)*fileSamplingInterval(),
@@ -515,7 +520,8 @@ shinyServer(function(input, output) {
 			by='Date']
 		summary[`Use (minutes)`>0,`Any Use`:='Yes']	
 		summary[`Use (minutes)`<=0,`Any Use`:='No']	
-		setcolorder(summary,c(1,2,3,5,4))		
+		summary <- merge(summary, events, by='Date')	
+		setcolorder(summary,c(1,2,3,5,6,4))
 	})
 
 	output$ambOutput <- renderDataTable(ambData(), options=list(searchable = FALSE, searching = FALSE, pageLength = 7))
