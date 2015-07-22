@@ -6,3 +6,6 @@ a#downloadsdCSV{background-color: transparent; border:none; float:right;}
 a#downloadambCSV{background-color: transparent; border:none; float:right;}
 a#downloadMerged{background-color: transparent; border:none; float:right;}
 #filetable{width:90%; overflow-x:scroll;}
+#sdThresholdPlotDL{color:black; float:right; margin-top:-15px; position: absolute; right: 0px; margin-right: 10px; z-index: 9999;}
+#thresholdPlotDL{color:black; float:right; margin-top:-15px; position: absolute; right: 0px; margin-right: 10px; z-index: 9999;}
+#ambthresholdPlotDL{color:black; float:right; margin-top:-15px; position: absolute; right: 0px; margin-right: 10px; z-index: 9999;}

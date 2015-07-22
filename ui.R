@@ -17,7 +17,7 @@ dashboardPage(
 	dashboardBody(
         tags$head(
             tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
-            tags$script(type='text/javascript', src='scripties.js')
+            tags$script(type='text/javascript', src='dygraph-extra.js')
             ),
 
     	tabItems(
@@ -48,14 +48,17 @@ dashboardPage(
                 fluidRow(
                     valueBoxOutput('totaluseTHRS'),                    
                     valueBoxOutput('dataDaysTHRS'),
-                    valueBoxOutput('useperdayTHRS')    
+                    valueBoxOutput('useperdayTHRS'),
+                    valueBoxOutput('useperdayuseddaysTHRS')    
+
                 ),
 		        fluidRow(                    
                     box(
                         width = 9, height='450px',
                         status = "info", solidHeader = TRUE,
                         title = textOutput("graphTitle"),
-                        dygraphOutput('thresholdPlot', height='390px')
+                        dygraphOutput('thresholdPlot', height='390px'),
+                        tags$a(id = "thresholdPlotDL", class = "shiny-download-link", icon("download"), "Save", download = "thresholdPlot.png")
                     ),
                     box(
                         width = 3, 
@@ -84,14 +87,16 @@ dashboardPage(
                 fluidRow(
                     valueBoxOutput('totaluseSD'),                    
                     valueBoxOutput('dataDaysSD'),
-                    valueBoxOutput('useperdaySD')                    
+                    valueBoxOutput('useperdaySD'),                    
+                    valueBoxOutput('useperdayuseddaysSD')                    
                 ),
                 fluidRow(
                     box(
                         width = 9,
                         status = "info", solidHeader = TRUE,
                         title = textOutput("graphTitleSD"),
-                        dygraphOutput('sdthresholdPlot', height='390px')
+                        dygraphOutput('sdthresholdPlot', height='390px'),
+                        tags$a(id = "sdThresholdPlotDL", class = "shiny-download-link", icon("download"), "Save", download = "sdthresholdPlot.png")
                     ),
                     box(
                         width = 3,
@@ -126,15 +131,17 @@ dashboardPage(
                         height='103px'
                     ),
                     valueBoxOutput('totaluseAMB'),
-                    # valueBoxOutput('dataDaysAMB'),
-                    valueBoxOutput('useperdayAMB')
+                    valueBoxOutput('dataDaysAMB'),
+                    valueBoxOutput('useperdayAMB'),
+                    valueBoxOutput('useperdayuseddaysAMB')
                 ),
                 fluidRow(
                     box(
                         width = 9,
                         status = "info", solidHeader = TRUE,
                         title = textOutput("graphTitleAMB"),
-                        dygraphOutput('ambthresholdPlot', height='390px')
+                        dygraphOutput('ambthresholdPlot', height='390px'),
+                        tags$a(id = "ambthresholdPlotDL", class = "shiny-download-link", icon("download"), "Save", download = "ambthresholdPlot.png")
                     ),
                     box(
                         width = 3, 

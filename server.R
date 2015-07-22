@@ -62,6 +62,7 @@ shinyServer(function(input, output) {
 		dta$threshold <- input$tempThreshold
 		dta$event[dta$temp>dta$threshold] <- 1000
 		dta <- as.data.table(dta)
+		dta[,yday:=yday(datetime)]
 	})
 
 	data.sdthreshold <- reactive({
@@ -73,6 +74,7 @@ shinyServer(function(input, output) {
 		dta$threshold <- (input$sdThreshold*dta$dailySD) + dta$dailyMean
 		dta$event[dta$temp>dta$threshold] <- 1000
 		dta <- as.data.table(dta)
+		dta[,yday:=yday(datetime)]
 	})
 
 	data.ambthreshold <- reactive({
@@ -93,6 +95,7 @@ shinyServer(function(input, output) {
 		dta$threshold <- (input$ambThreshold*dta$sd.amb) + dta$amb
 		dta$event[dta$temp>(dta$threshold) & dta$temp>input$ambThresholdplus & dta$slope>-10] <- 1000
 		dta <- as.data.table(dta)
+		dta[,yday:=yday(datetime)]
 	})
 
 	################################
@@ -175,13 +178,13 @@ shinyServer(function(input, output) {
 
 	output$sdThreshold <- renderUI({
         sliderInput("sdThreshold", "SD Threshold",
-            min = 0, max = 12, value = 1, step = 0.5
+            min = 0, max = 12, value = 1, step = 0.25
         )
 	})
 
 	output$ambThreshold <- renderUI({
         sliderInput("ambThreshold", "Ambient SD Threshold",
-            min = 0, max = 18, value = 9, step = 0.5
+            min = 0, max = 18, value = 9, step = 0.25
         )
 	})
 
@@ -262,7 +265,7 @@ shinyServer(function(input, output) {
 		totaluse <- data.threshold()[datetime>=from() & datetime<=to(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse,0),
-			subtitle = "Use Minutes",
+			subtitle = "Total Use Minutes",
 			icon = icon("time", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -289,13 +292,26 @@ shinyServer(function(input, output) {
 		)
 	})
 
+	output$useperdayuseddaysTHRS <- renderValueBox({
+		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.threshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		num_nonuse_days <- data.threshold()[is.na(event),length(event),by=yday][V1==144, length(V1)]
+		valueBox(
+			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
+			subtitle = "Avg Use on Use Days",
+			icon = icon("fire", lib='glyphicon'),
+			color = "aqua"
+		)
+	})
+
+
 	#Daily Mean Algorithm
 	output$totaluseSD <- renderValueBox({
 		days <- data_cleaned()[datetime>=fromSD() & datetime<=toSD(),round(difftime(max(datetime),min(datetime), units='days'),2)]
 		totaluse <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse,0),
-			subtitle = "Use Minutes",
+			subtitle = "Total Use Minutes",
 			icon = icon("time", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -322,13 +338,25 @@ shinyServer(function(input, output) {
 		)
 	})
 
+	output$useperdayuseddaysSD <- renderValueBox({
+		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.sdthreshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		num_nonuse_days <- data.sdthreshold()[is.na(event),length(event),by=yday][V1==144, length(V1)]
+		valueBox(
+			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
+			subtitle = "Avg Use on Use Days",
+			icon = icon("fire", lib='glyphicon'),
+			color = "aqua"
+		)
+	})
+
 	#Ambient-corrected
 	output$totaluseAMB <- renderValueBox({
 		days <- data_cleaned()[datetime>=fromAMB() & datetime<=toAMB(),round(difftime(max(datetime),min(datetime), units='days'),2)]
 		totaluse <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse,0),
-			subtitle = "Use Minutes",
+			subtitle = "Total Use Minutes",
 			icon = icon("time", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -354,6 +382,19 @@ shinyServer(function(input, output) {
 			color = "aqua"
 		)
 	})
+
+	output$useperdayuseddaysAMB <- renderValueBox({
+		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.ambthreshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		num_nonuse_days <- data.ambthreshold()[is.na(event),length(event),by=yday][V1==144, length(V1)]
+		valueBox(
+			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
+			subtitle = "Avg Use on Use Days",
+			icon = icon("fire", lib='glyphicon'),
+			color = "aqua"
+		)
+	})
+
 
 	####################
 	###### Tables ###### 
@@ -438,8 +479,10 @@ shinyServer(function(input, output) {
 	    dyAxis("x", label = "Date & Time") %>%
 		dySeries("temp", label = "SUMs Temp Deg C", strokeWidth=1) %>%
 		dySeries("threshold", label = "Threshold", strokePattern = "dashed", strokeWidth=1) %>%
-		dySeries("event", label = "Usage Events", strokeWidth=3, fillGraph=TRUE)
+		dySeries("event", label = "Usage Events", strokeWidth=3, fillGraph=TRUE) %>%
+		dyCallbacks(drawCallback = "function(dygraph){$('#thresholdPlotDL').attr('href', Dygraph.Export.asCanvas(dygraph).toDataURL());}")
 	})
+
 
 	output$sdthresholdPlot<- 
 	renderDygraph({
@@ -449,7 +492,8 @@ shinyServer(function(input, output) {
 	    dyAxis("x", label = "Date & Time") %>%
 		dySeries("temp", label = "SUMs Temp Deg C", strokeWidth=1) %>%
 		dySeries("threshold", label = "Threshold", strokePattern = "dashed", strokeWidth=1) %>%
-		dySeries("event", label = "Usage Events", strokeWidth=3, fillGraph=TRUE)
+		dySeries("event", label = "Usage Events", strokeWidth=3, fillGraph=TRUE)%>%
+		dyCallbacks(drawCallback = "function(dygraph){$('#sdThresholdPlotDL').attr('href', Dygraph.Export.asCanvas(dygraph).toDataURL());}")
 	})
 
 	output$ambthresholdPlot<- 
@@ -461,7 +505,8 @@ shinyServer(function(input, output) {
 		dySeries("temp", label = "SUMs Temp Deg C", strokeWidth=1) %>%
 		dySeries("threshold", label = "Threshold", strokePattern = "dashed", strokeWidth=1) %>%
 		dySeries("event", label = "Usage Events", strokeWidth=3, fillGraph=TRUE) %>%
-		dySeries("amb", label = "Ambient Temp Deg C", strokeWidth=1, strokePattern="dotted", fillGraph=F)
+		dySeries("amb", label = "Ambient Temp Deg C", strokeWidth=1, strokePattern="dotted", fillGraph=F)%>%
+		dyCallbacks(drawCallback = "function(dygraph){$('#ambthresholdPlotDL').attr('href', Dygraph.Export.asCanvas(dygraph).toDataURL());}")
 	})
 
 	##########################
