@@ -63,6 +63,10 @@ shinyServer(function(input, output) {
 		dta$event[dta$temp>dta$threshold] <- 1000
 		dta <- as.data.table(dta)
 		dta[,yday:=yday(datetime)]
+		dta[,rnum:=1:nrow(dta)]
+		dta[is.na(event), rnum:=0]
+		dta[,rnum.diff:=c(diff(rnum),NA)]
+		dta[rnum.diff<0, rnum.diff:=1]
 	})
 
 	data.sdthreshold <- reactive({
@@ -75,6 +79,10 @@ shinyServer(function(input, output) {
 		dta$event[dta$temp>dta$threshold] <- 1000
 		dta <- as.data.table(dta)
 		dta[,yday:=yday(datetime)]
+		dta[,rnum:=1:nrow(dta)]
+		dta[is.na(event), rnum:=0]
+		dta[,rnum.diff:=c(diff(rnum),NA)]
+		dta[rnum.diff<0, rnum.diff:=1]
 	})
 
 	data.ambthreshold <- reactive({
@@ -96,6 +104,10 @@ shinyServer(function(input, output) {
 		dta$event[dta$temp>(dta$threshold) & dta$temp>input$ambThresholdplus & dta$slope>-10] <- 1000
 		dta <- as.data.table(dta)
 		dta[,yday:=yday(datetime)]
+		dta[,rnum:=1:nrow(dta)]
+		dta[is.na(event), rnum:=0]
+		dta[,rnum.diff:=c(diff(rnum),NA)]
+		dta[rnum.diff<0, rnum.diff:=1]
 	})
 
 	################################
@@ -265,7 +277,7 @@ shinyServer(function(input, output) {
 		totaluse <- data.threshold()[datetime>=from() & datetime<=to(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse,0),
-			subtitle = "Total Use Minutes",
+			subtitle = "Total Use Minutes for Selection",
 			icon = icon("time", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -275,18 +287,18 @@ shinyServer(function(input, output) {
 		days <- data_cleaned()[datetime>=from() & datetime<=to(),round(difftime(max(datetime),min(datetime), units='days'),2)]
 		valueBox(
 			value = days,
-			subtitle = "Days of Sampling",
+			subtitle = "Days of Sampling for Selection",
 			icon = icon("calendar"),
 			color = "aqua"
 		)
 	})
 
 	output$useperdayTHRS <- renderValueBox({
-		days <- data_cleaned()[datetime>=from() & datetime<=to(),round(difftime(max(datetime),min(datetime), units='days'),2)]
-		totaluse <- data.threshold()[datetime>=from() & datetime<=to(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
+		days <- data_cleaned()[,round(difftime(max(datetime),min(datetime), units='days'),2)]
+		totaluse <- data.threshold()[, sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse/as.numeric(days),0),
-			subtitle = "Average Daily Use Minutes",
+			subtitle = "Average Daily Use Minutes for File",
 			icon = icon("fire", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -297,13 +309,29 @@ shinyServer(function(input, output) {
 		totaluse <- data.threshold()[datetime>=from() & datetime<=to(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		num_nonuse_days <- data.threshold()[is.na(event) & datetime>=from() & datetime<=to(),length(event),by=yday][V1==144, length(V1)]
 		valueBox(
-			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
-			subtitle = "Avg Use on Use Days",
+			# intentionally throw error
+			value = if(days>=1){round(totaluse/(as.numeric(days) - num_nonuse_days),0)}else{round(events*as,numeric(days),1)},
+			subtitle = "Avg Use (mins) on Days with Use for Selection",
 			icon = icon("fire", lib='glyphicon'),
-			color = "aqua"
+			color = "green"
 		)
 	})
 
+	output$eventsperdayuseddaysTHRS <- renderValueBox({
+		days <- data_cleaned()[datetime>=from() & datetime<=to(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		num_nonuse_days <- data.threshold()[is.na(event) & datetime>=from() & datetime<=to(),length(event),by=yday][V1==144, length(V1)]
+		events <- length(data.threshold()[datetime>=from() & datetime<=to() & rnum.diff>1, rnum.diff])
+		grouped <- length(which(diff(events)<=3))
+		events <- events - grouped
+
+		valueBox(
+			# intentionally throw error
+			value = if(days>=1){round(events/(as.numeric(days) - num_nonuse_days),1)}else{round(events*as,numeric(days),1)},
+			subtitle = "Avg # of Uses on Selected Days with Use",
+			icon = icon("fire", lib='glyphicon'),
+			color = "green"
+		)
+	})
 
 	#Daily Mean Algorithm
 	output$totaluseSD <- renderValueBox({
@@ -311,7 +339,7 @@ shinyServer(function(input, output) {
 		totaluse <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse,0),
-			subtitle = "Total Use Minutes",
+			subtitle = "Total Use Minutes for Selection",
 			icon = icon("time", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -321,7 +349,7 @@ shinyServer(function(input, output) {
 		days <- data_cleaned()[datetime>=fromSD() & datetime<=toSD(),round(difftime(max(datetime),min(datetime), units='days'),2)]
 		valueBox(
 			value = days,
-			subtitle = "Days of Sampling",
+			subtitle = "Days of Sampling for Selection",
 			icon = icon("calendar"),
 			color = "aqua"
 		)
@@ -332,7 +360,7 @@ shinyServer(function(input, output) {
 		totaluse <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse/as.numeric(days),0),
-			subtitle = "Average Daily Use Minutes",
+			subtitle = "Average Daily Use Minutes for File",
 			icon = icon("fire", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -341,14 +369,32 @@ shinyServer(function(input, output) {
 	output$useperdayuseddaysSD <- renderValueBox({
 		days <- data_cleaned()[datetime>=fromSD() & datetime<=toSD(),round(difftime(max(datetime),min(datetime), units='days'),2)]
 		totaluse <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
-		num_nonuse_days <- data.sdthreshold()[datetime>=fromSD() & datetime<=toSD() & is.na(event),length(event),by=yday][V1==144, length(V1)]
+		num_nonuse_days <- data.sdthreshold()[is.na(event) & datetime>=fromSD() & datetime<=toSD(),length(event),by=yday][V1==144, length(V1)]
 		valueBox(
-			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
-			subtitle = "Avg Use on Use Days",
+			# intentionally throw error
+			value = if(days>=1){round(totaluse/(as.numeric(days) - num_nonuse_days),0)}else{round(events*as,numeric(days),1)},
+			subtitle = "Avg Use (mins) on Days with Use for Selection",
 			icon = icon("fire", lib='glyphicon'),
-			color = "aqua"
+			color = "green"
 		)
 	})
+
+	output$eventsperdayuseddaysSD <- renderValueBox({
+		days <- data_cleaned()[datetime>=fromSD() & datetime<=toSD(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		num_nonuse_days <- data.sdthreshold()[is.na(event) & datetime>=fromSD() & datetime<=toSD(),length(event),by=yday][V1==144, length(V1)]
+		events <- length(data.threshold()[datetime>=fromSD() & datetime<=toSD() & rnum.diff>1, rnum.diff])
+		grouped <- length(which(diff(events)<=3))
+		events <- events - grouped
+
+		valueBox(
+			# intentionally throw error
+			value = if(days>=1){round(events/(as.numeric(days) - num_nonuse_days),1)}else{round(events*as,numeric(days),1)},
+			subtitle = "Avg # of Uses on Selected Days with Use",
+			icon = icon("fire", lib='glyphicon'),
+			color = "green"
+		)
+	})
+
 
 	#Ambient-corrected
 	output$totaluseAMB <- renderValueBox({
@@ -356,7 +402,7 @@ shinyServer(function(input, output) {
 		totaluse <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse,0),
-			subtitle = "Total Use Minutes",
+			subtitle = "Total Use Minutes for Selection",
 			icon = icon("time", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -366,7 +412,7 @@ shinyServer(function(input, output) {
 		days <- data_cleaned()[datetime>=fromAMB() & datetime<=toAMB(),round(difftime(max(datetime),min(datetime), units='days'),2)]
 		valueBox(
 			value = days,
-			subtitle = "Days of Sampling",
+			subtitle = "Days of Sampling for Selection",
 			icon = icon("calendar"),
 			color = "aqua"
 		)
@@ -377,7 +423,7 @@ shinyServer(function(input, output) {
 		totaluse <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
 		valueBox(
 			value = round(totaluse/as.numeric(days),0),
-			subtitle = "Average Daily Use Minutes",
+			subtitle = "Average Daily Use Minutes for File",
 			icon = icon("fire", lib='glyphicon'),
 			color = "aqua"
 		)
@@ -386,16 +432,31 @@ shinyServer(function(input, output) {
 	output$useperdayuseddaysAMB <- renderValueBox({
 		days <- data_cleaned()[datetime>=fromAMB() & datetime<=toAMB(),round(difftime(max(datetime),min(datetime), units='days'),2)]
 		totaluse <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB(), sum(event-(event - fileSamplingInterval()), na.rm=T)]
-		num_nonuse_days <- data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB() & is.na(event),length(event),by=yday][V1==144, length(V1)]
+		num_nonuse_days <- data.ambthreshold()[is.na(event) & datetime>=fromAMB() & datetime<=toAMB(),length(event),by=yday][V1==144, length(V1)]
 		valueBox(
-			value = round(totaluse/(as.numeric(days) - num_nonuse_days),0),
-			subtitle = "Avg Use on Use Days",
+			# intentionally throw error
+			value = if(days>=1){round(totaluse/(as.numeric(days) - num_nonuse_days),0)}else{round(events*as,numeric(days),1)},
+			subtitle = "Avg Use (mins) on Days with Use for Selection",
 			icon = icon("fire", lib='glyphicon'),
-			color = "aqua"
+			color = "green"
 		)
 	})
 
+	output$eventsperdayuseddaysAMB <- renderValueBox({
+		days <- data_cleaned()[datetime>=fromAMB() & datetime<=toAMB(),round(difftime(max(datetime),min(datetime), units='days'),2)]
+		num_nonuse_days <- data.ambthreshold()[is.na(event) & datetime>=fromAMB() & datetime<=toAMB(),length(event),by=yday][V1==144, length(V1)]
+		events <- length(data.ambthreshold()[datetime>=fromAMB() & datetime<=toAMB() & rnum.diff>1, rnum.diff])
+		grouped <- length(which(diff(events)<=3))
+		events <- events - grouped
 
+		valueBox(
+			# intentionally throw error
+			value = if(days>=1){round(events/(as.numeric(days) - num_nonuse_days),1)}else{round(events*as,numeric(days),1)},
+			subtitle = "Avg # of Uses on Selected Days with Use",
+			icon = icon("fire", lib='glyphicon'),
+			color = "green"
+		)
+	})
 	####################
 	###### Tables ###### 
 	####################

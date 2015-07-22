@@ -9,3 +9,4 @@ a#downloadMerged{background-color: transparent; border:none; float:right;}
 #sdThresholdPlotDL{color:black; float:right; margin-top:-15px; position: absolute; right: 0px; margin-right: 10px; z-index: 9999;}
 #thresholdPlotDL{color:black; float:right; margin-top:-15px; position: absolute; right: 0px; margin-right: 10px; z-index: 9999;}
 #ambthresholdPlotDL{color:black; float:right; margin-top:-15px; position: absolute; right: 0px; margin-right: 10px; z-index: 9999;}
+.box{margin-bottom:15px;}

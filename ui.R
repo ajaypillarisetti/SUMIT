@@ -50,8 +50,8 @@ dashboardPage(
                     valueBoxOutput('totaluseTHRS'),                    
                     valueBoxOutput('dataDaysTHRS'),
                     valueBoxOutput('useperdayTHRS'),
-                    valueBoxOutput('useperdayuseddaysTHRS')    
-
+                    valueBoxOutput('useperdayuseddaysTHRS'),
+                    valueBoxOutput('eventsperdayuseddaysTHRS')
                 ),
 		        fluidRow(                    
                     box(
@@ -89,7 +89,8 @@ dashboardPage(
                     valueBoxOutput('totaluseSD'),                    
                     valueBoxOutput('dataDaysSD'),
                     valueBoxOutput('useperdaySD'),                    
-                    valueBoxOutput('useperdayuseddaysSD')                    
+                    valueBoxOutput('useperdayuseddaysSD'),
+                    valueBoxOutput('eventsperdayuseddaysSD')
                 ),
                 fluidRow(
                     box(
@@ -134,7 +135,8 @@ dashboardPage(
                     valueBoxOutput('totaluseAMB'),
                     valueBoxOutput('dataDaysAMB'),
                     valueBoxOutput('useperdayAMB'),
-                    valueBoxOutput('useperdayuseddaysAMB')
+                    valueBoxOutput('useperdayuseddaysAMB'),
+                    valueBoxOutput('eventsperdayuseddaysAMB')
                 ),
                 fluidRow(
                     box(
