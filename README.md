@@ -1,7 +1,7 @@
 # SUMIT
 ## An R and Shiny-based tool for analyzing iButton Stove Use Monitor Data
 
-SUMIT is an easy-to-use, simple tool for analyzing SUMs data from iButtons. It requires R, some libraries, and a modern web browser (Chrome recommended) to work. It currently accepts *only* csv files from Maxim's OneWireViewer, the free software used to download data from iButtons.
+SUMIT is an easy-to-use and extremely simple tool for preliminary analysis of SUMs data from iButtons. It is made for rapid visualization and analysis of a small number of files; it is not suited for analysis of large amounts of SUMs data. It requires R, some libraries, and a modern web browser (Chrome recommended) to work. It currently accepts *only* csv files from Maxim's OneWireViewer, the free software used to download data from iButtons.
 
 To run SUMIT from R:
 
@@ -29,4 +29,4 @@ setwd("~/sumit")
 runApp()
 ```
 
-We will also make a public version of SUMIT available on the web. Stay tuned!
+A public beta of SUMIT is available at [householdenergy.shinyapps.io/sumit](http://householdenergy.shinyapps.io/sumit). For analysis of a large number of iButton SUMs files, we recommend [SUMSarizer](https://github.com/SUMSarizer/SUMSarizer), a machine-learning based tool that can analyze large volumes of SUMs data. 
