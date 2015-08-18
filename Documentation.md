@@ -49,6 +49,14 @@ runApp()
 ###Using SUMIT
 Use of SUMIT begins with temporarily uploading a file using its File Browser interface. Click the “Choose File” button to select a File for use in SUMIT. SUMIT accepts any iButton csv downloaded using Maxim’s free One Wire Viewer[^1].
 
-<img src='https://www.dropbox.com/s/afqjvj26feilgh9/Welcome_to_SUMIT.png?dl=0' />
+![](https://raw.githubusercontent.com/ajaypillarisetti/SUMIT/master/documentation_images/Welcome_to_SUMIT.png)
+
+After successful upload, a graph and a number of info boxes will be displayed in the Main SUMIT window.
+
+![](https://raw.githubusercontent.com/ajaypillarisetti/SUMIT/master/documentation_images/Success_upload.png)
+
+All graphs in SUMIT are fully interactive; click and drag to zoom in on specific portions of the graph that may be of interest. Double-clicking on the graph zooms out.
+
+![](https://raw.githubusercontent.com/ajaypillarisetti/SUMIT/master/documentation_images/Interact_with_%20Viewer.gif)
 
 [^1]: http://www.maximintegrated.com/en/products/ibutton/software/1wire/OneWireViewer.cfm 
