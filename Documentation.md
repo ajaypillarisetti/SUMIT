@@ -80,7 +80,7 @@ Click the SUMs Analysis Tab to select algorithms you can use to analyze your dat
 Each tab also outputs a graph generated on the screen and a table of summary results by day. 
 
 ![](documentation_images/graph.png)
-![](documentation_images/table.png)
+![](documentation_images/Table.png)
 
 Both the graph and the summary can be downloaded by clicking the "Save" and "Download CSV" buttons.  
 
