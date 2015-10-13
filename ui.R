@@ -1,3 +1,5 @@
+require(markdown)
+
 dashboardPage(
   dashboardHeader(title = "SUMIT"),
   dashboardSidebar(
