@@ -54,7 +54,7 @@ shinyServer(function(input, output) {
 	####################
 	dataXTS.plainplot <- reactive({
 		dta<-data_cleaned()
-		as.xts(dta[,c('temp'), with=F], order.by=dta$datetime, tz="GMT")
+		as.xts(dta[,c('datetime','temp'), with=F])
 	})
 
 	data.threshold <- reactive({
@@ -74,9 +74,10 @@ shinyServer(function(input, output) {
 		dta[,day:=as.Date(datetime)]
 		dta[,dailyMean:=mean(temp),by='day']
 		dta[,dailySD:=sd(temp),by='day']
+		dta[,dailyRange:=max(temp)-min(temp), by='day']
 		dta<-as.data.frame(dta)
 		dta$threshold <- (input$sdThreshold*dta$dailySD) + dta$dailyMean
-		dta$event[dta$temp>dta$threshold] <- 1000
+		dta$event[dta$temp>dta$threshold & dta$dailyRange>20] <- 1000
 		dta <- as.data.table(dta)
 		dta[,yday:=yday(datetime)]
 		dta[,rnum:=1:nrow(dta)]
@@ -115,17 +116,17 @@ shinyServer(function(input, output) {
 	################################
 	dataXTS.threshold <- reactive({
 		dta <- data.threshold()
-		as.xts(dta[,c('temp','threshold','event'), with=F], order.by=dta$datetime, tz="GMT")
+		as.xts(dta[,c('datetime', 'temp','threshold','event'), with=F])
 	})
 
 	dataXTS.sdthreshold <- reactive({
 		dta <- data.sdthreshold()
-		as.xts(dta[,c('temp','threshold','event'), with=F], order.by=dta$datetime, tz="GMT")
+		as.xts(dta[,c('datetime','temp','threshold','event'), with=F])
 	})
 
 	dataXTS.ambthreshold <- reactive({
 		dta <- data.ambthreshold()
-		as.xts(dta[,c('amb','temp','threshold','event'), with=F], order.by=dta$datetime, tz="GMT")
+		as.xts(dta[,c('datetime', 'amb','temp','threshold','event'), with=F])
 	})
 
 	####################
@@ -484,7 +485,7 @@ shinyServer(function(input, output) {
 			by='Date']
 		summary[`Use (minutes)`>0,`Any Use`:='Yes']	
 		summary[`Use (minutes)`<=0,`Any Use`:='No']
-		summary <- merge(summary, events, by='Date')	
+		summary <- merge(summary, events, by='Date', all.x=T)	
 		setcolorder(summary,c(1,2,3,5,6,4))
 	})
 
@@ -502,7 +503,7 @@ shinyServer(function(input, output) {
 			by='Date']
 		summary[`Use (minutes)`>0,`Any Use`:='Yes']	
 		summary[`Use (minutes)`<=0,`Any Use`:='No']	
-		summary <- merge(summary, events, by='Date')	
+		summary <- merge(summary, events, by='Date', all.x=T)	
 		setcolorder(summary,c(1,2,3,5,6,4))
 	})
 
@@ -520,7 +521,7 @@ shinyServer(function(input, output) {
 			by='Date']
 		summary[`Use (minutes)`>0,`Any Use`:='Yes']	
 		summary[`Use (minutes)`<=0,`Any Use`:='No']	
-		summary <- merge(summary, events, by='Date')	
+		summary <- merge(summary, events, by='Date', all.x=T)	
 		setcolorder(summary,c(1,2,3,5,6,4))
 	})
 
