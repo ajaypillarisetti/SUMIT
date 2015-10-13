@@ -10,8 +10,9 @@ dashboardPage(
         ),
 	    # menuItem("Dashboard", tabName = "dashboard"),
     	menuItem("Raw data", tabName = "rawdata",  icon = icon("tasks")),
-        menuItem("Merge Files", tabName = "merge",  icon = icon("files-o"))
-
+        menuItem("Merge Files", tabName = "merge",  icon = icon("files-o")),
+        menuItem("Documentation", icon = icon("book"), href = "https://github.com/ajaypillarisetti/SUMIT/blob/master/Documentation.md"),
+        menuItem("Source code", icon = icon("file-code-o"), href = "https://github.com/ajaypillarisetti/SUMIT/")
     )
   ),
 	dashboardBody(
@@ -186,6 +187,13 @@ dashboardPage(
                     box(width=12, status='info', solidHeader=TRUE, title="Uploaded Files to Combine",
                         downloadButton("downloadMerged", "Download CSV"),
                         tableOutput('filetable')
+                    )
+                )
+            ),
+            tabItem("manual",
+                fluidRow(
+                    box(width=12,  collapsible = TRUE,status="info", solidHeader=TRUE, title="SUMIT Instructions",
+                        includeMarkdown("Documentation.md")
                     )
                 )
             )               
